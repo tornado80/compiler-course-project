@@ -1,6 +1,12 @@
 import ply.lex
 
 
+class Entry:
+    def __init__(self, lexeme, attribute):
+        self.lexeme = lexeme
+        self.attribute = attribute
+
+
 class PascalLexer:
     keywords = [
         "PROGRAM", "VAR", "BEGIN", "END",
@@ -33,20 +39,27 @@ class PascalLexer:
     t_GREATER_THAN = r'>'
     t_LEFT_PARENTHESIS = r'\('
     t_RIGHT_PARENTHESIS = r'\)'
+    t_ignore = ' \t' # ignore white spaces
 
-    def t_INTEGER_CONSTANT(self, token):
-        r'[\+\-]?[1-9][0-9]*|0'
-        token.value = int(token.value)
-        return token
+    def t_newline(self, token):
+        r'\n+'
+        token.lexer.lineno += len(token.value)
 
     def t_REAL_CONSTANT(self, token):
         r'[\+\-]?([1-9][0-9]*|0).(([0-9]*[1-9])|0)'
-        token.value = float(token.value)
+        token.value = Entry(token.value, float(token.value))
+        return token
+
+    def t_INTEGER_CONSTANT(self, token):
+        r'[\+\-]?[1-9][0-9]*|0'
+        token.value = Entry(token.value, int(token.value))
         return token
 
     def t_ID(self, token):
         r'[a-zA-Z][a-zA-Z0-9_]*'
-        token.type = self.reserved.get(token.value, 'ID')
+        token.type = self.reserved.get(token.value.lower(), 'ID')
+        if token.type == 'ID':
+            token.value = Entry(token.value, token.value)
         return token
 
     def build(self, **kwargs):
@@ -57,3 +70,7 @@ class PascalLexer:
 
     def token(self):
         return self.engine.token()
+
+    def t_error(self, token):
+        print(f"Illegal character '{token.value[0]}'")
+        token.lexer.skip(1)
