@@ -39,19 +39,19 @@ class PascalLexer:
     t_GREATER_THAN = r'>'
     t_LEFT_PARENTHESIS = r'\('
     t_RIGHT_PARENTHESIS = r'\)'
-    t_ignore = ' \t' # ignore white spaces
+    t_ignore = ' \t'  # ignore white spaces
 
     def t_newline(self, token):
         r'\n+'
         token.lexer.lineno += len(token.value)
 
     def t_REAL_CONSTANT(self, token):
-        r'[\+\-]?([1-9][0-9]*|0).(([0-9]*[1-9])|0)'
+        r'([1-9][0-9]*|0)\.[0-9]+'
         token.value = Entry(token.value, float(token.value))
         return token
 
     def t_INTEGER_CONSTANT(self, token):
-        r'[\+\-]?[1-9][0-9]*|0'
+        r'[1-9][0-9]*|0'
         token.value = Entry(token.value, int(token.value))
         return token
 

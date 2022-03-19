@@ -9,6 +9,7 @@ s : real;
 procedure findMin(x, y, z: integer; var m: integer);
 
 begin
+a:=(1+2)*-4+5;
    if x < y then
       m:= x
    else
@@ -37,5 +38,6 @@ begin
     s := s mod 5;
     if(s > 2 and s <4 ) then
         a_var := -005;
-
+        b := 00646;
+        c:=0.00000;
 end
