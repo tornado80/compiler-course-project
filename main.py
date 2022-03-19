@@ -14,3 +14,5 @@ while True:
               f"ATTRIBUTE: {token.value.attribute}, LINE NUMBER: {token.lineno}")
     else:
         print(f"TOKEN: {token.type}, LEXEME: '{token.value}', LINE NUMBER: {token.lineno}")
+
+
