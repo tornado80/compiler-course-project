@@ -69,7 +69,8 @@ class PascalLexer:
         self.engine.input(inp)
 
     def token(self):
-        return self.engine.token()
+        self.current_token = self.engine.token()
+        return self.current_token
 
     def t_error(self, token):
         print(f"Illegal character '{token.value[0]}'")
