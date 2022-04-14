@@ -1,4 +1,4 @@
-PROGRAM compilerProjTest;
+PROGRAM compilerProjTest
 var
 a_var, b_var,c_var,i , chosenOp: integer;
 s : real;
@@ -6,8 +6,8 @@ s : real;
 
 
 
-procedure findMin(x, y, z: integer; var m: integer);
-
+procedure findMin(x, y, z: integer; m: integer);
+var m: integer;
 begin
 a:=(1+2)*-4+5;
    if x < y then
@@ -16,14 +16,14 @@ a:=(1+2)*-4+5;
       m:= y;
 
    if z < m then
-      m:= z;
+      m:= z
 end;
 
 begin
 
 
     if (a_var <= 0 or a_var <> b_var) then
-        a_var := 2;
+        a_var := 2
     else
         s := (4 / 3) * a_var * a_var * a_var * (7 div 2);
 
@@ -32,12 +32,12 @@ begin
     begin
        findMin(a_var,b_var,c_var, s);
        b_var := b_var - 2;
-       c_var := not c_var;
+       c_var := not c_var
     end;
 
     s := s mod 5;
     if(s > 2 and s <4 ) then
-        a_var := -005;
-        b := 00646;
-        c:=0.00000;
+        a_var := -5;
+        b := 646;
+        c:=0.00000
 end
