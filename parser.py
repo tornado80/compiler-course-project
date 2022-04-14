@@ -21,7 +21,7 @@ class Node:
 
 class PascalParser:
     def p_program(self, p):
-        """program : PROGRAM ID declarations procedure_list compound_statement"""
+        """program : PROGRAM ID declarations procedures compound_statement"""
         p[0] = Node("program", children=[p[3], p[4], p[5]], leaf=p[2])
         print(self.p_program.__doc__)
 
@@ -67,15 +67,24 @@ class PascalParser:
         p[0] = Node("type", leaf=p[1])
         print("type :", p[1].type)
 
+    def p_procedures(self, p):
+        """procedures : procedure_list
+                      | empty"""
+        p[0] = Node("procedures", children=[p[1]])
+        if p[1].type == "empty":
+            print("procedures : empty")
+        else:
+            print("procedures : procedure_list")
+
     def p_procedure_list(self, p):
         """procedure_list : procedure_list procedure
-                          | empty"""
+                          | procedure"""
         p[0] = node = Node("procedure_list", children=[p[1]])
         if len(p) > 2:
             node.children.append(p[2])
             print("procedure_list : procedure_list procedure")
         else:
-            print("procedure_list : empty")
+            print("procedure_list : procedure")
 
     def p_procedure(self, p):
         """procedure : PROCEDURE ID parameters SEMICOLON declarations compound_statement SEMICOLON"""
