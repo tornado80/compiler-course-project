@@ -20,7 +20,7 @@ for test in os.listdir("tests/in"):
         tokenizer(input_file_path, prepare_lexer())
         lexer = prepare_lexer()
         parser = prepare_parser(lexer, start="expression")
-        compile_(input_file_path, "tests/out", lexer, parser, code_generation=False)
+        compile_(input_file_path, "tests/out", lexer, parser, code_generation=True)
     if test.endswith(".program"):
         tokenizer(input_file_path, prepare_lexer())
         compile_(input_file_path, "tests/out", code_generation=False)

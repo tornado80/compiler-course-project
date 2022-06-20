@@ -8,6 +8,18 @@ class CodeGenerator:
         self.symbol_table = None
         self.syntax_tree_root = syntax_tree_root
         self.quadruples: List[ThreeAddressCode] = []
+        self.last_temporary_variable = 0
+        self.semantic_analysis = True
+
+    def emit(self, tac: ThreeAddressCode):
+        self.quadruples.append(tac)
+
+    def newtemp(self):
+        # TODO: free temp
+        self.last_temporary_variable += 1
+        return f"({self.last_temporary_variable})"
 
     def generate(self, semantic_analysis: bool):
-        pass
+        self.semantic_analysis = semantic_analysis
+        self.syntax_tree_root.visit(self)
+        return self.quadruples
