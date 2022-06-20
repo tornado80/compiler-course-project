@@ -1,25 +1,16 @@
-import ply.yacc
-from lexer import PascalLexer
-
-
-class Node:
-    def __init__(self, type, children=None, leaf=None):
-        self.type = type
-        if children:
-            self.children = children
-        else:
-            self.children = []
-        self.leaf = leaf
-
-    @property
-    def id(self):
-        return str(id(self))
-
-    def __str__(self):
-        return f"{self.type} ({self.leaf})" if self.leaf else self.type
+import src.ply.yacc
+from src.lexer import PascalLexer, Token
+from src.syntax_tree import Node, BinaryExpression, UnaryExpression, TerminalExpression
 
 
 class PascalParser:
+    precedence = (
+        ("nonassoc", "RELATIONAL", "LESS_THAN", "LESS_THAN_OR_EQUAL", "EQUAL", "NOT_EQUAL", "GREATER_THAN", "GREATER_THAN_OR_EQUAL"),
+        ("left", "ADDITIVE", "PLUS", "MINUS", "OR"),
+        ("left", "MULTIPLICATIVE", "TIMES", "DIVIDE", "DIV", "MOD", "AND"),
+        ("right", "UNARY", "NOT"),
+    )
+
     def p_program(self, p):
         """program : PROGRAM ID declarations procedures compound_statement"""
         p[0] = Node("program", children=[p[3], p[4], p[5]], leaf=p[2])
@@ -63,7 +54,8 @@ class PascalParser:
 
     def p_type(self, p):
         """type : INTEGER
-                | REAL"""
+                | REAL
+                | BOOLEAN"""
         p[0] = Node("type", leaf=p[1])
         print("type :", p[1].type)
 
@@ -71,7 +63,7 @@ class PascalParser:
         """procedures : procedure_list
                       | empty"""
         p[0] = Node("procedures", children=[p[1]])
-        if p[1].type == "empty":
+        if p[1].tag == "empty":
             print("procedures : empty")
         else:
             print("procedures : procedure_list")
@@ -156,7 +148,7 @@ class PascalParser:
         """actual_parameters : actual_parameter_list
                              | empty"""
         p[0] = Node("actual_parameters", children=[p[1]])
-        if p[1].type == "empty":
+        if p[1].tag == "empty":
             print("actual_parameters : empty")
         else:
             print("actual_parameters : actual_parameter_list")
@@ -172,14 +164,35 @@ class PascalParser:
             print("actual_parameter_list : expression")
 
     def p_expression(self, p):
-        """expression : expression relational_operator additive_expression
-                      | additive_expression"""
-        p[0] = node = Node("expression", children=[p[1]])
-        if len(p) > 2:
-            node.children.extend([p[2], p[3]])
-            print("expression : expression relational_operator additive_expression")
-        else:
-            print("expression : additive_expression")
+        """expression : expression additive_operator expression %prec ADDITIVE
+                      | expression relational_operator expression %prec RELATIONAL
+                      | expression multiplicative_operator expression %prec MULTIPLICATIVE
+                      | LEFT_PARENTHESIS expression RIGHT_PARENTHESIS
+                      | unary_operator expression %prec UNARY
+                      | identifier_or_constant"""
+        # p[0] = node = Node("expression")
+        if len(p) == 4:
+            if isinstance(p[1], Token):  # ( E )
+                p[0] = p[2]  # node.children.extend([p[2]])
+                print("expression : ( expression )")
+            else:  # E op E
+                p[0] = BinaryExpression(p[2], p[1], p[3])  # node.children.extend([p[1], p[2], p[3]])
+                print(f"expression : expression {p[2].type} expression")
+        elif len(p) == 3:  # op E
+            p[0] = UnaryExpression(p[1], p[2])  # node.children.extend([p[1], p[2]])
+            print(f"expression : unary_operator expression")
+        elif len(p) == 2:
+            p[0] = p[1]  # node.children.append(p[1])
+            print(f"expression : identifier_or_constant")
+
+    def p_identifier_or_constant(self, p):
+        """identifier_or_constant : INTEGER_CONSTANT
+                                  | REAL_CONSTANT
+                                  | ID
+                                  | TRUE
+                                  | FALSE"""
+        p[0] = TerminalExpression(p[1])  # Node("identifier_or_constant", leaf=p[1])
+        print(f"identifier_or_constant : {p[1].type}")
 
     def p_relational_operator(self, p):
         """relational_operator : LESS_THAN
@@ -188,35 +201,15 @@ class PascalParser:
                                | NOT_EQUAL
                                | GREATER_THAN
                                | GREATER_THAN_OR_EQUAL"""
-        p[0] = Node("relational_operator", leaf=p[1])
+        p[0] = p[1]  # Node("relational_operator", leaf=p[1])
         print("relational_operator :", p[1].type)
-
-    def p_additive_expression(self, p):
-        """additive_expression : additive_expression additive_operator multiplicative_expression
-                               | multiplicative_expression"""
-        p[0] = node = Node("additive_expression", children=[p[1]])
-        if len(p) > 2:
-            node.children.extend([p[2], p[3]])
-            print("additive_expression : additive_expression additive_operator multiplicative_expression")
-        else:
-            print("additive_expression : multiplicative_expression")
 
     def p_additive_operator(self, p):
         """additive_operator : PLUS
                              | MINUS
                              | OR"""
-        p[0] = Node("additive_operator", leaf=p[1])
+        p[0] = p[1]  # Node("additive_operator", leaf=p[1])
         print("additive_operator :", p[1].type)
-
-    def p_multiplicative_expression(self, p):
-        """multiplicative_expression : multiplicative_expression multiplicative_operator unary_expression
-                                     | unary_expression"""
-        p[0] = node = Node("multiplicative_expression", children=[p[1]])
-        if len(p) > 2:
-            node.children.extend([p[2], p[3]])
-            print("multiplicative_expression : multiplicative_expression multiplicative_operator unary_expression")
-        else:
-            print("multiplicative_expression : unary_expression")
 
     def p_multiplicative_operator(self, p):
         """multiplicative_operator : TIMES
@@ -224,50 +217,27 @@ class PascalParser:
                                    | DIV
                                    | MOD
                                    | AND"""
-        p[0] = Node("multiplicative_operator", leaf=p[1])
+        p[0] = p[1]  # Node("multiplicative_operator", leaf=p[1])
         print("multiplicative_operator :", p[1].type)
-
-    def p_unary_expression(self, p):
-        """unary_expression : unary_operator unary_expression
-                            | primary_expression"""
-        p[0] = node = Node("unary_expression", children=[p[1]])
-        if len(p) > 2:
-            node.children.append(p[2])
-            print("unary_expression : unary_operator unary_expression")
-        else:
-            print("unary_expression : primary_expression")
 
     def p_unary_operator(self, p):
         """unary_operator : PLUS
                           | MINUS
                           | NOT"""
-        p[0] = Node("unary_operator", leaf=p[1])
+        p[0] = p[1]  # Node("unary_operator", leaf=p[1])
         print("unary_operator :", p[1].type)
-
-    def p_primary_expression(self, p):
-        """primary_expression : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS
-                              | ID
-                              | INTEGER_CONSTANT
-                              | REAL_CONSTANT"""
-        p[0] = node = Node("primary_expression")
-        if len(p) > 2:
-            node.children.append(p[2])
-            print("primary_expression : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS")
-        else:
-            node.children.append(Node("token", leaf=p[1]))
-            print("primary_expression :", p[1].type)
 
     def p_empty(self, p):
         """empty :"""
         p[0] = Node("empty")
 
     def p_error(self, p):
-        print("Syntax error at line", p.lineno, "for token", p.type, "with value", p.value)
+        print("Syntax error at line", p.lineno, "for token", p.tag, "with value", p.value)
 
     def build(self, lexer: PascalLexer, **kwargs):
         self.lexer = lexer
         self.tokens = lexer.tokens
-        self.engine = ply.yacc.yacc(module=self, **kwargs)
+        self.engine = src.ply.yacc.yacc(module=self, **kwargs)
 
-    def parse(self, debug=False):
-        return self.engine.parse(lexer=self.lexer, debug=debug)
+    def parse(self, **kwargs):
+        return self.engine.parse(lexer=self.lexer, **kwargs)
