@@ -21,10 +21,16 @@ class BinaryAssignment(ThreeAddressCode):
     def __init__(self, binary_operator: BinaryOperator, arg1, arg2, result):
         super().__init__(binary_operator, arg1, arg2, result)
 
+    def __str__(self):
+        return f"{self.address3} := {self.address1} {self.operator} {self.address2}\n"
+
 
 class UnaryAssignment(ThreeAddressCode):
     def __init__(self, unary_operator: UnaryOperator, arg, result):
         super().__init__(unary_operator, arg, None, result)
+
+    def __str__(self):
+        return f"{self.address3} := {self.operator} {self.address1}\n"
 
 
 class BareAssignment(ThreeAddressCode):

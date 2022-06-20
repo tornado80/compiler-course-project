@@ -6,19 +6,12 @@ class Operator(Enum):
 
 
 class BinaryOperator(Operator):
-    pass
-
-
-class BinaryArithmeticOperator(BinaryOperator):
     PLUS = 1
     MINUS = 2
     TIMES = 3
     DIVIDE = 4
     DIV = 5
     MOD = 6
-
-
-class BinaryLogicalOperator(BinaryOperator):
     AND = 7
     OR = 8
 

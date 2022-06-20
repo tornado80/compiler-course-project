@@ -1,0 +1,5 @@
+(1) := 1 BinaryOperator.PLUS 2
+(2) := UnaryOperator.UNARY_MINUS 4
+(3) := (1) BinaryOperator.TIMES (2)
+(4) := UnaryOperator.UNARY_PLUS 5
+(5) := (3) BinaryOperator.PLUS (4)
