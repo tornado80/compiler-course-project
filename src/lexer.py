@@ -1,4 +1,4 @@
-import ply.lex
+import src.ply.lex
 
 
 class Token:
@@ -13,11 +13,15 @@ class Token:
 
 
 class PascalLexer:
+    states = (
+        ('comment', 'exclusive'),
+    )
     keywords = [
         "PROGRAM", "VAR", "BEGIN", "END",
         "IF", "THEN", "ELSE", "WHILE", "DO",
         "AND", "OR", "NOT", "MOD", "DIV",
-        "INTEGER", "REAL", "PROCEDURE"
+        "INTEGER", "REAL", "PROCEDURE",
+        "BOOLEAN", "TRUE", "FALSE"
     ]
     reserved = {keyword.lower(): keyword for keyword in keywords}
     tokens = [
@@ -45,6 +49,37 @@ class PascalLexer:
     t_LEFT_PARENTHESIS = r'\('
     t_RIGHT_PARENTHESIS = r'\)'
     t_ignore = ' \t'  # ignore white spaces
+    t_comment_ignore = ' \t\n'  # ignore white spaces in comments
+
+    def __init__(self):
+        self.comment_level = 0
+        self.engine = None
+        self.comment_start = 0
+
+    def t_inline_comment(self, token):
+        r'//.*'
+        pass
+
+    def t_comment(self, token):
+        r'\{'
+        self.comment_start = token.lexer.lexpos
+        self.comment_level = 1
+        token.lexer.begin('comment')
+
+    def t_comment_lbrace(self, token):
+        r'\{'
+        self.comment_level += 1
+
+    def t_comment_rbrace(self, token):
+        r'\}'
+        self.comment_level -= 1
+        if self.comment_level == 0:
+            comment = token.lexer.lexdata[self.comment_start:token.lexer.lexpos]
+            token.lexer.lineno += comment.count('\n')
+            token.lexer.begin('INITIAL')
+
+    def t_comment_error(self, token):
+        token.lexer.skip(1)
 
     def t_newline(self, token):
         r'\n+'
@@ -64,11 +99,11 @@ class PascalLexer:
         r'[a-zA-Z][a-zA-Z0-9_]*'
         token.type = self.reserved.get(token.value.lower(), 'ID')
         if token.type == 'ID':
-            token.value = Token(token.type, token.value, token.value, token.lineno)
+            token.value = Token(token.type, token.value, None, token.lineno)
         return token
 
     def build(self, **kwargs):
-        self.engine = ply.lex.lex(module=self, **kwargs)
+        self.engine = src.ply.lex.lex(module=self, **kwargs)
 
     def input(self, inp):
         self.engine.input(inp)
