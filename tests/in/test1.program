@@ -6,7 +6,7 @@ s : real;
 
 
 
-procedure findMin(x, y, z: integer; m: integer);
+procedure findMin(x, y, z: integer; m: integer; r, s: real);
 var m: integer;
 begin
 //b:= 1* 2 < 5 + 7;

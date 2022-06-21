@@ -23,7 +23,7 @@ def compile_(
         pascal_lexer: PascalLexer = None,
         pascal_parser: PascalParser = None,
         debug=False,
-        semantic_analysis=True,
+        semantic_analysis_relaxed=False,
         code_generation=True):
     output_file_path = utils.get_output_file_path(input_file_path, output_path)
     if not pascal_lexer:
@@ -33,9 +33,18 @@ def compile_(
     with open(input_file_path, "r") as f:
         pascal_lexer.input(f.read())
     root = pascal_parser.parse(debug=debug)
+    with open(f"{output_file_path}.tokens", "w") as f:
+        for token in pascal_lexer.generated_tokens:
+            f.write(f"{token}\n")
+    with open(f"{output_file_path}.reductions", "w") as f:
+        for reduction in pascal_parser.reductions:
+            f.write(f"{reduction}\n")
     tree = PyDotGenerator("Syntax Tree", root).generate()
     tree.write_svg(f"{output_file_path}.syntax.svg")
     if code_generation:
-        quadruples = CodeGenerator(root).generate(semantic_analysis)
+        code_generator = CodeGenerator(root)
+        quadruples = code_generator.generate(semantic_analysis_relaxed)
+        with open(f"{output_file_path}.symbols", "w") as f:
+            f.write(str(code_generator.symbol_table))
         with open(f"{output_file_path}.compiled", "w") as f:
-            f.writelines([str(quadruple) for quadruple in quadruples])
+            f.writelines([f"{quadruple}\n" for quadruple in quadruples])

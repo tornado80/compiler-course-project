@@ -1,12 +1,14 @@
 from src.operator_enum import Operator, BinaryOperator, RelationalOperator, UnaryOperator
+from src.symbol_table import SymbolTable
 
 
 class ThreeAddressOperator(Operator):
-    ASSIGN = 18
-    UNCONDITIONAL_JUMP = 19
-    CONDITIONAL_JUMP = 20
-    PARAMETER = 21
-    CALL = 22
+    ASSIGN = "ASSIGN"
+    UNCONDITIONAL_JUMP = "UNCONDITIONAL_JUMP"
+    CONDITIONAL_JUMP = "CONDITIONAL_JUMP"
+    PARAMETER = "PARAMETER"
+    CALL = "CALL"
+    LABEL = "LABEL"
 
 
 class ThreeAddressCode:
@@ -17,12 +19,20 @@ class ThreeAddressCode:
         self.address3 = address3
 
 
+class Label(ThreeAddressCode):
+    def __init__(self, scope: SymbolTable):
+        super().__init__(ThreeAddressOperator.LABEL, scope.header)
+
+    def __str__(self):
+        return f"{self.address1}:"
+
+
 class BinaryAssignment(ThreeAddressCode):
     def __init__(self, binary_operator: BinaryOperator, arg1, arg2, result):
         super().__init__(binary_operator, arg1, arg2, result)
 
     def __str__(self):
-        return f"{self.address3} := {self.address1} {self.operator} {self.address2}\n"
+        return f"{self.address3} := {self.address1} {self.operator} {self.address2}"
 
 
 class UnaryAssignment(ThreeAddressCode):
@@ -30,28 +40,42 @@ class UnaryAssignment(ThreeAddressCode):
         super().__init__(unary_operator, arg, None, result)
 
     def __str__(self):
-        return f"{self.address3} := {self.operator} {self.address1}\n"
+        return f"{self.address3} := {self.operator} {self.address1}"
 
 
 class BareAssignment(ThreeAddressCode):
     def __init__(self, src, dest):
         super().__init__(ThreeAddressOperator.ASSIGN, src, None, dest)
 
+    def __str__(self):
+        return f"{self.address3} := {self.address1}"
+
 
 class ConditionalJump(ThreeAddressCode):
     def __init__(self, relational_operator: RelationalOperator, arg1, arg2, label):
         self.relational_operator = relational_operator
         super().__init__(ThreeAddressOperator.CONDITIONAL_JUMP, arg1, arg2, label)
+        self.label = label
+
+    def __str__(self):
+        return f"if {self.address1} {self.relational_operator} {self.address2} goto {self.label}"
 
 
 class UnconditionalJump(ThreeAddressCode):
     def __init__(self, label):
         super().__init__(ThreeAddressOperator.UNCONDITIONAL_JUMP, label)
+        self.label = label
+
+    def __str__(self):
+        return f"goto {self.label}"
 
 
 class Parameter(ThreeAddressCode):
     def __init__(self, parameter):
         super().__init__(ThreeAddressOperator.PARAMETER, parameter)
+
+    def __str__(self):
+        return f"param {self.address1}"
 
 
 class Call(ThreeAddressCode):
