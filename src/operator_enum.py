@@ -6,26 +6,26 @@ class Operator(Enum):
 
 
 class BinaryOperator(Operator):
-    PLUS = 1
-    MINUS = 2
-    TIMES = 3
-    DIVIDE = 4
-    DIV = 5
-    MOD = 6
-    AND = 7
-    OR = 8
+    PLUS = "PLUS"
+    MINUS = "MINUS"
+    TIMES = "TIMES"
+    DIVIDE = "DIVIDE"
+    DIV = "DIV"
+    MOD = "MOD"
+    AND = "AND"
+    OR = "OR"
 
 
 class UnaryOperator(Operator):
-    NOT = 9
-    UNARY_PLUS = 10
-    UNARY_MINUS = 11
+    NOT = "NOT"
+    UNARY_PLUS = "UNARY_PLUS"
+    UNARY_MINUS = "UNARY_MINUS"
 
 
 class RelationalOperator(Operator):
-    LESS_THAN = 12
-    GREATER_THAN = 13
-    EQUAL = 14
-    NOT_EQUAL = 15
-    LESS_THAN_OR_EQUAL = 16
-    GREATER_THAN_OR_EQUAL = 17
+    LESS_THAN = "LESS_THAN"
+    GREATER_THAN = "GREATER_THAN"
+    EQUAL = "EQUAL"
+    NOT_EQUAL = "NOT_EQUAL"
+    LESS_THAN_OR_EQUAL = "LESS_THAN_OR_EQUAL"
+    GREATER_THAN_OR_EQUAL = "GREATER_THAN_OR_EQUAL"

@@ -1,3 +1,5 @@
+from typing import List
+
 import src.ply.lex
 
 
@@ -55,6 +57,7 @@ class PascalLexer:
         self.comment_level = 0
         self.engine = None
         self.comment_start = 0
+        self.generated_tokens: List[Token] = []
 
     def t_inline_comment(self, token):
         r'//.*'
@@ -110,8 +113,10 @@ class PascalLexer:
 
     def token(self):
         token = self.engine.token()
-        if token and not isinstance(token.value, Token):
-            token.value = Token(token.type, token.value, None, token.lineno)
+        if token:
+            if not isinstance(token.value, Token):
+                token.value = Token(token.type, token.value, None, token.lineno)
+            self.generated_tokens.append(token.value)
         return token
 
     def t_error(self, token):
