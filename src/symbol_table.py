@@ -8,7 +8,7 @@ class DataType(Enum):
     REAL = ("REAL", 8)
     INTEGER = ("INTEGER", 4)
     # we don't support boolean data types. this is just for expressions types during code generation
-    BOOLEAN = "BOOLEAN"
+    BOOLEAN = ("BOOLEAN", 1)
 
 
 class EntryType(Enum):

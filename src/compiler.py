@@ -24,12 +24,13 @@ def compile_(
         pascal_parser: PascalParser = None,
         debug=False,
         semantic_analysis_relaxed=False,
-        code_generation=True):
+        code_generation=True,
+        start: str = None):
     output_file_path = utils.get_output_file_path(input_file_path, output_path)
     if not pascal_lexer:
         pascal_lexer = prepare_lexer()
     if not pascal_parser:
-        pascal_parser = prepare_parser(pascal_lexer, debug=debug)
+        pascal_parser = prepare_parser(pascal_lexer, debug=debug, start=start)
     with open(input_file_path, "r") as f:
         pascal_lexer.input(f.read())
     root = pascal_parser.parse(debug=debug)

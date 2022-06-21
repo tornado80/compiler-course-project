@@ -9,120 +9,120 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 256)">
 <title>Syntax Tree</title>
 <polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-256 3054.3985,-256 3054.3985,4 -4,4"/>
-<!-- 139993813488864 -->
+<!-- 140569100961496 -->
 <g id="node1" class="node">
-<title>139993813488864</title>
+<title>140569100961496</title>
 <ellipse fill="none" stroke="#000000" cx="1204.5242" cy="-234" rx="284.0496" ry="18"/>
 <text text-anchor="middle" x="1204.5242" y="-230.3" font-family="Times,serif" font-size="14.00" fill="#000000">binary_expression (Token(type: OR, lexeme: &#39;or&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813340680 -->
+<!-- 140569100924520 -->
 <g id="node2" class="node">
-<title>139993813340680</title>
+<title>140569100924520</title>
 <ellipse fill="none" stroke="#000000" cx="888.5242" cy="-162" rx="319.2434" ry="18"/>
 <text text-anchor="middle" x="888.5242" y="-158.3" font-family="Times,serif" font-size="14.00" fill="#000000">binary_expression (Token(type: LESS_THAN, lexeme: &#39;&lt;&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813488864&#45;&#45;139993813340680 -->
+<!-- 140569100961496&#45;&#45;140569100924520 -->
 <g id="edge1" class="edge">
-<title>139993813488864&#45;&#45;139993813340680</title>
+<title>140569100961496&#45;&#45;140569100924520</title>
 <path fill="none" stroke="#000000" d="M1128.0294,-216.5708C1078.7117,-205.3339 1014.8044,-190.7727 965.4098,-179.5182"/>
 </g>
-<!-- 139993813332880 -->
+<!-- 140569100541792 -->
 <g id="node5" class="node">
-<title>139993813332880</title>
+<title>140569100541792</title>
 <ellipse fill="none" stroke="#000000" cx="1521.5242" cy="-162" rx="295.9477" ry="18"/>
 <text text-anchor="middle" x="1521.5242" y="-158.3" font-family="Times,serif" font-size="14.00" fill="#000000">binary_expression (Token(type: AND, lexeme: &#39;and&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813488864&#45;&#45;139993813332880 -->
+<!-- 140569100961496&#45;&#45;140569100541792 -->
 <g id="edge4" class="edge">
-<title>139993813488864&#45;&#45;139993813332880</title>
+<title>140569100961496&#45;&#45;140569100541792</title>
 <path fill="none" stroke="#000000" d="M1281.2611,-216.5708C1330.9181,-205.2922 1395.3195,-190.6648 1444.9453,-179.3933"/>
 </g>
-<!-- 139993813488752 -->
+<!-- 140569100961608 -->
 <g id="node3" class="node">
-<title>139993813488752</title>
+<title>140569100961608</title>
 <ellipse fill="none" stroke="#000000" cx="290.5242" cy="-90" rx="290.5484" ry="18"/>
 <text text-anchor="middle" x="290.5242" y="-86.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;a&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813340680&#45;&#45;139993813488752 -->
+<!-- 140569100924520&#45;&#45;140569100961608 -->
 <g id="edge2" class="edge">
-<title>139993813340680&#45;&#45;139993813488752</title>
+<title>140569100924520&#45;&#45;140569100961608</title>
 <path fill="none" stroke="#000000" d="M752.8288,-145.6621C654.2732,-133.7959 521.5712,-117.8184 423.6227,-106.0252"/>
 </g>
-<!-- 139993813488640 -->
+<!-- 140569100961384 -->
 <g id="node4" class="node">
-<title>139993813488640</title>
+<title>140569100961384</title>
 <ellipse fill="none" stroke="#000000" cx="890.5242" cy="-90" rx="291.3484" ry="18"/>
 <text text-anchor="middle" x="890.5242" y="-86.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;b&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813340680&#45;&#45;139993813488640 -->
+<!-- 140569100924520&#45;&#45;140569100961384 -->
 <g id="edge3" class="edge">
-<title>139993813340680&#45;&#45;139993813488640</title>
+<title>140569100924520&#45;&#45;140569100961384</title>
 <path fill="none" stroke="#000000" d="M889.0289,-143.8314C889.3298,-133 889.7107,-119.2876 890.0127,-108.4133"/>
 </g>
-<!-- 139993813332376 -->
+<!-- 140569100541288 -->
 <g id="node6" class="node">
-<title>139993813332376</title>
+<title>140569100541288</title>
 <ellipse fill="none" stroke="#000000" cx="1520.5242" cy="-90" rx="319.2434" ry="18"/>
 <text text-anchor="middle" x="1520.5242" y="-86.3" font-family="Times,serif" font-size="14.00" fill="#000000">binary_expression (Token(type: LESS_THAN, lexeme: &#39;&lt;&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813332880&#45;&#45;139993813332376 -->
+<!-- 140569100541792&#45;&#45;140569100541288 -->
 <g id="edge5" class="edge">
-<title>139993813332880&#45;&#45;139993813332376</title>
+<title>140569100541792&#45;&#45;140569100541288</title>
 <path fill="none" stroke="#000000" d="M1521.2719,-143.8314C1521.1214,-133 1520.931,-119.2876 1520.78,-108.4133"/>
 </g>
-<!-- 139993813333048 -->
+<!-- 140569100570696 -->
 <g id="node9" class="node">
-<title>139993813333048</title>
+<title>140569100570696</title>
 <ellipse fill="none" stroke="#000000" cx="2176.5242" cy="-90" rx="319.2434" ry="18"/>
 <text text-anchor="middle" x="2176.5242" y="-86.3" font-family="Times,serif" font-size="14.00" fill="#000000">binary_expression (Token(type: LESS_THAN, lexeme: &#39;&lt;&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813332880&#45;&#45;139993813333048 -->
+<!-- 140569100541792&#45;&#45;140569100570696 -->
 <g id="edge8" class="edge">
-<title>139993813332880&#45;&#45;139993813333048</title>
+<title>140569100541792&#45;&#45;140569100570696</title>
 <path fill="none" stroke="#000000" d="M1664.8619,-146.2438C1773.2943,-134.3245 1921.6334,-118.0185 2030.6755,-106.0322"/>
 </g>
-<!-- 139993813340512 -->
+<!-- 140569100540672 -->
 <g id="node7" class="node">
-<title>139993813340512</title>
+<title>140569100540672</title>
 <ellipse fill="none" stroke="#000000" cx="934.5242" cy="-18" rx="290.5484" ry="18"/>
 <text text-anchor="middle" x="934.5242" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;c&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813332376&#45;&#45;139993813340512 -->
+<!-- 140569100541288&#45;&#45;140569100540672 -->
 <g id="edge6" class="edge">
-<title>139993813332376&#45;&#45;139993813340512</title>
+<title>140569100541288&#45;&#45;140569100540672</title>
 <path fill="none" stroke="#000000" d="M1387.1853,-73.6171C1290.8445,-61.78 1161.3496,-45.8693 1065.5462,-34.0983"/>
 </g>
-<!-- 139993813332040 -->
+<!-- 140569100540952 -->
 <g id="node8" class="node">
-<title>139993813332040</title>
+<title>140569100540952</title>
 <ellipse fill="none" stroke="#000000" cx="1534.5242" cy="-18" rx="291.3484" ry="18"/>
 <text text-anchor="middle" x="1534.5242" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;d&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813332376&#45;&#45;139993813332040 -->
+<!-- 140569100541288&#45;&#45;140569100540952 -->
 <g id="edge7" class="edge">
-<title>139993813332376&#45;&#45;139993813332040</title>
+<title>140569100541288&#45;&#45;140569100540952</title>
 <path fill="none" stroke="#000000" d="M1524.057,-71.8314C1526.1631,-61 1528.8294,-47.2876 1530.9439,-36.4133"/>
 </g>
-<!-- 139993813332544 -->
+<!-- 140569100541456 -->
 <g id="node10" class="node">
-<title>139993813332544</title>
+<title>140569100541456</title>
 <ellipse fill="none" stroke="#000000" cx="2162.5242" cy="-18" rx="290.5484" ry="18"/>
 <text text-anchor="middle" x="2162.5242" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;e&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813333048&#45;&#45;139993813332544 -->
+<!-- 140569100570696&#45;&#45;140569100541456 -->
 <g id="edge9" class="edge">
-<title>139993813333048&#45;&#45;139993813332544</title>
+<title>140569100570696&#45;&#45;140569100541456</title>
 <path fill="none" stroke="#000000" d="M2172.9914,-71.8314C2170.8853,-61 2168.219,-47.2876 2166.1046,-36.4133"/>
 </g>
-<!-- 139993813332712 -->
+<!-- 140569100541624 -->
 <g id="node11" class="node">
-<title>139993813332712</title>
+<title>140569100541624</title>
 <ellipse fill="none" stroke="#000000" cx="2760.5242" cy="-18" rx="289.7486" ry="18"/>
 <text text-anchor="middle" x="2760.5242" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">identifier_or_constant (Token(type: ID, lexeme: &#39;f&#39;, attribute: None, lineno: 1))</text>
 </g>
-<!-- 139993813333048&#45;&#45;139993813332712 -->
+<!-- 140569100570696&#45;&#45;140569100541624 -->
 <g id="edge10" class="edge">
-<title>139993813333048&#45;&#45;139993813332712</title>
+<title>140569100570696&#45;&#45;140569100541624</title>
 <path fill="none" stroke="#000000" d="M2309.4081,-73.6171C2405.42,-61.78 2534.473,-45.8693 2629.9494,-34.0983"/>
 </g>
 </g>
