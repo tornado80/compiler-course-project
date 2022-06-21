@@ -1,16 +1,16 @@
 PROGRAM compilerProjTest
 var
-a_var, b_var,c_var,i , chosenOp: integer;
-s : real;
+a_var, b_var,c_var,i , chosenOp, b, g, h, d: integer;
+s , c: real;
 
 
 
 
 procedure findMin(x, y, z: integer; m: integer; r, s: real);
-var m: integer;
+var l: integer;
 begin
 //b:= 1* 2 < 5 + 7;
-a:=(1+2)*-4++5;
+//a:=(1+2)*-4++5;
    if x < y then
       m:= x
    else
@@ -43,8 +43,7 @@ begin
     while b_var > 10 do
     begin
        findMin(a_var,b_var,c_var, s);
-       b_var := b_var - 2;
-       c_var := not c_var
+       b_var := b_var - 2
     end;
 
     s := s mod 5;

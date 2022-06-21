@@ -3,10 +3,15 @@ identifier_list : identifier_list COMMA ID
 identifier_list : identifier_list COMMA ID
 identifier_list : identifier_list COMMA ID
 identifier_list : identifier_list COMMA ID
+identifier_list : identifier_list COMMA ID
+identifier_list : identifier_list COMMA ID
+identifier_list : identifier_list COMMA ID
+identifier_list : identifier_list COMMA ID
 type : INTEGER
 declaration : identifier_list COLON data_type
 declaration_list : declaration
 identifier_list : ID
+identifier_list : identifier_list COMMA ID
 type : REAL
 declaration : identifier_list COLON data_type
 declaration_list : declaration_list SEMICOLON declaration
@@ -32,27 +37,6 @@ type : INTEGER
 declaration : identifier_list COLON data_type
 declaration_list : declaration
 declarations : VAR declaration_list SEMICOLON
-identifier_or_constant : INTEGER_CONSTANT
-expression : identifier_or_constant
-additive_operator : PLUS
-identifier_or_constant : INTEGER_CONSTANT
-expression : identifier_or_constant
-expression : expression PLUS expression
-expression : ( expression )
-multiplicative_operator : TIMES
-unary_operator : MINUS
-identifier_or_constant : INTEGER_CONSTANT
-expression : identifier_or_constant
-expression : unary_operator expression
-expression : expression TIMES expression
-additive_operator : PLUS
-unary_operator : PLUS
-identifier_or_constant : INTEGER_CONSTANT
-expression : identifier_or_constant
-expression : unary_operator expression
-expression : expression PLUS expression
-statement : ID ASSIGN expression
-statement_list : statement
 identifier_or_constant : ID
 expression : identifier_or_constant
 relational_operator : LESS_THAN
@@ -66,7 +50,7 @@ identifier_or_constant : ID
 expression : identifier_or_constant
 statement : ID ASSIGN expression
 statement : IF expression THEN statement ELSE statement
-statement_list : statement_list SEMICOLON statement
+statement_list : statement
 identifier_or_constant : ID
 expression : identifier_or_constant
 relational_operator : LESS_THAN
@@ -136,12 +120,6 @@ additive_operator : MINUS
 identifier_or_constant : INTEGER_CONSTANT
 expression : identifier_or_constant
 expression : expression MINUS expression
-statement : ID ASSIGN expression
-statement_list : statement_list SEMICOLON statement
-unary_operator : NOT
-identifier_or_constant : ID
-expression : identifier_or_constant
-expression : unary_operator expression
 statement : ID ASSIGN expression
 statement_list : statement_list SEMICOLON statement
 compound_statement : BEGIN statement_list END

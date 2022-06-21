@@ -23,7 +23,7 @@ class PascalLexer:
         "IF", "THEN", "ELSE", "WHILE", "DO",
         "AND", "OR", "NOT", "MOD", "DIV",
         "INTEGER", "REAL", "PROCEDURE",
-        "BOOLEAN", "TRUE", "FALSE"
+        "TRUE", "FALSE"
     ]
     reserved = {keyword.lower(): keyword for keyword in keywords}
     tokens = [
@@ -101,6 +101,10 @@ class PascalLexer:
     def t_ID(self, token):
         r'[a-zA-Z][a-zA-Z0-9_]*'
         token.type = self.reserved.get(token.value.lower(), 'ID')
+        if token.type == "TRUE":
+            token.value = Token(token.type, token.value, True, token.lineno)
+        if token.type == "FALSE":
+            token.value = Token(token.type, token.value, False, token.lineno)
         if token.type == 'ID':
             token.value = Token(token.type, token.value, None, token.lineno)
         return token

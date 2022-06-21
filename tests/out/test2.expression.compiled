@@ -1,6 +1,6 @@
-(1) := 4 BinaryOperator.PLUS 3
-(2) := (1) BinaryOperator.TIMES a_var
-(3) := (2) BinaryOperator.TIMES a_var
-(4) := (3) BinaryOperator.TIMES a_var
-(5) := 7 BinaryOperator.MINUS 2
-(6) := (4) BinaryOperator.TIMES (5)
+(1/INTEGER) := 4 PLUS 3
+(1/REAL) := (1/INTEGER) TIMES a_var
+(1/REAL) := (1/REAL) TIMES a_var
+(1/REAL) := (1/REAL) TIMES a_var
+(1/INTEGER) := 7 MINUS 2
+(1/REAL) := (1/REAL) TIMES (1/INTEGER)

@@ -1,3 +1,5 @@
+from abc import ABC
+
 from src.operator_enum import Operator, BinaryOperator, RelationalOperator, UnaryOperator
 from src.symbol_table import SymbolTable
 
@@ -11,7 +13,7 @@ class ThreeAddressOperator(Operator):
     LABEL = "LABEL"
 
 
-class ThreeAddressCode:
+class ThreeAddressCode(ABC):
     def __init__(self, operator: Operator, address1, address2=None, address3=None):
         self.operator = operator
         self.address1 = address1
@@ -55,19 +57,17 @@ class ConditionalJump(ThreeAddressCode):
     def __init__(self, relational_operator: RelationalOperator, arg1, arg2, label):
         self.relational_operator = relational_operator
         super().__init__(ThreeAddressOperator.CONDITIONAL_JUMP, arg1, arg2, label)
-        self.label = label
 
     def __str__(self):
-        return f"if {self.address1} {self.relational_operator} {self.address2} goto {self.label}"
+        return f"if {self.address1} {self.relational_operator} {self.address2} goto {self.address3}"
 
 
 class UnconditionalJump(ThreeAddressCode):
     def __init__(self, label):
-        super().__init__(ThreeAddressOperator.UNCONDITIONAL_JUMP, label)
-        self.label = label
+        super().__init__(ThreeAddressOperator.UNCONDITIONAL_JUMP, None, None, label)
 
     def __str__(self):
-        return f"goto {self.label}"
+        return f"goto {self.address3}"
 
 
 class Parameter(ThreeAddressCode):

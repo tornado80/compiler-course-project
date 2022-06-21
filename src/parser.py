@@ -65,8 +65,7 @@ class PascalParser:
 
     def p_data_type(self, p):
         """data_type : INTEGER
-                     | REAL
-                     | BOOLEAN"""
+                     | REAL"""
         p[0] = p[1]
         self.log(f"type : {p[1].type}")
 
@@ -242,7 +241,9 @@ class PascalParser:
         p[0] = Node("empty")
 
     def p_error(self, p):
-        self.log(f"Syntax error at line {p.lineno} for token {p.tag} with value {p.value}")
+        error = f"Syntax error at line {p.lineno} for token {p.tag} with value {p.value}"
+        self.log(error)
+        raise SyntaxError(error)
 
     def build(self, lexer: PascalLexer, **kwargs):
         self.lexer = lexer

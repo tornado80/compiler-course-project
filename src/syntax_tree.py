@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
+from src.errors import SemanticError
 from src.lexer import Token
 from src.operator_enum import UnaryOperator, BinaryOperator
 from src.ply.code_generator_base import CodeGeneratorBase
-from src.symbol_table import DataType, EntryType
-from src.three_address_code import UnaryAssignment, BinaryAssignment, Label
+from src.symbol_table import DataType, EntryType, Entry
+from src.three_address_code import UnaryAssignment, BinaryAssignment, Label, BareAssignment, ConditionalJump, \
+    UnconditionalJump
 
 
 class Node(ABC):
@@ -34,10 +36,13 @@ class Node(ABC):
 
 
 class Expression(Node):
+    @abstractmethod
     def __init__(self, tag, children=None, leaf=None):
         super().__init__(tag, children, leaf)
-        self.place = None # TODO: Entry
-        self.type = None
+        self.place: Entry = None
+        self.type: DataType = None
+        self.truelist = []
+        self.falselist = []
 
 
 class BinaryExpression(Expression):
@@ -49,34 +54,78 @@ class BinaryExpression(Expression):
 
     def visit(self, code_generator):
         self.left_operand.visit(code_generator)
+        marker = code_generator.nextquad
         self.right_operand.visit(code_generator)
-        self.place = code_generator.newtemp()
-        # TODO: for all operators and type checking
-        if self.binary_operator.type == "TIMES":
+        arithmetic_types = [DataType.REAL, DataType.INTEGER]
+        if self.binary_operator.type in ["LESS_THAN", "GREATER_THAN", "NOT_EQUAL",
+            "EQUAL", "LESS_THAN_OR_EQUAL", "GREATER_THAN_OR_EQUAL"]:
+            # type checking
+            if self.left_operand.type not in arithmetic_types or self.right_operand.type not in arithmetic_types:
+                code_generator.log(
+                    SemanticError(f"Incompatible types: relational operators only apply to arithmetic types.")
+                )
+            # free temporary
+            if self.left_operand.place.entry_type == EntryType.TEMPORARY:
+                code_generator.freetemp(self.left_operand.place.data_type)
+            if self.right_operand.place.entry_type == EntryType.TEMPORARY:
+                code_generator.freetemp(self.right_operand.place.data_type)
+            # find the type of result
+            self.type = DataType.BOOLEAN
+            # backpatching
+            nextquad = code_generator.nextquad
+            self.truelist = [nextquad]
+            self.falselist = [nextquad + 1]
+            # TODO: convert to Relational Operator Enum. we have just relaxed restricting types :)
+            # code generation
+            code_generator.emit(ConditionalJump(
+                self.binary_operator.type,
+                self.left_operand.place,
+                self.right_operand.place,
+                None  # None label is to be backpatched
+            ))
+            code_generator.emit(UnconditionalJump(None))
+        if self.binary_operator.type in ["PLUS", "MINUS", "TIMES", "DIVIDE", "MOD", "DIV"]:
+            # type checking
+            if self.left_operand.type not in arithmetic_types or self.right_operand.type not in arithmetic_types:
+                code_generator.log(
+                    SemanticError(f"Incompatible types: arithmetic operators only apply to arithmetic types.")
+                )
+            # free temporary
+            if self.left_operand.place.entry_type == EntryType.TEMPORARY:
+                code_generator.freetemp(self.left_operand.place.data_type)
+            if self.right_operand.place.entry_type == EntryType.TEMPORARY:
+                code_generator.freetemp(self.right_operand.place.data_type)
+            # find the type of result and allocate temporary
+            if self.left_operand.type == DataType.REAL or self.right_operand.type == DataType.REAL:
+                self.type = DataType.REAL
+                self.place = code_generator.newtemp(self.type)
+            if self.left_operand.type == DataType.INTEGER and self.right_operand.type == DataType.INTEGER:
+                self.type = DataType.INTEGER
+                self.place = code_generator.newtemp(self.type)
+            # code generation
             code_generator.emit(BinaryAssignment(
-                BinaryOperator.TIMES,
+                self.binary_operator.type,
                 self.left_operand.place,
                 self.right_operand.place,
                 self.place
             ))
-        elif self.binary_operator.type == "PLUS":
-            code_generator.emit(BinaryAssignment(
-                BinaryOperator.PLUS,
-                self.left_operand.place,
-                self.right_operand.place,
-                self.place
-            ))
-        elif self.binary_operator.type == "MINUS":
-            code_generator.emit(BinaryAssignment(
-                BinaryOperator.MINUS,
-                self.left_operand.place,
-                self.right_operand.place,
-                self.place
-            ))
-
-
-class SemanticError(Exception):
-    pass
+        if self.binary_operator.type in ["AND", "OR"]:
+            # type checking
+            if self.left_operand.type != DataType.BOOLEAN or self.left_operand.type != DataType.BOOLEAN:
+                code_generator.log(
+                    SemanticError(f"Incompatible types: logical operators only apply to boolean types.")
+                )
+            # find the type of result
+            self.type = DataType.BOOLEAN
+            # backpatching
+            if self.binary_operator.type == "OR":
+                code_generator.backpatch(self.left_operand.falselist, marker)
+                self.truelist = self.left_operand.truelist + self.right_operand.truelist
+                self.falselist = self.right_operand.falselist
+            if self.binary_operator.type == "AND":
+                code_generator.backpatch(self.left_operand.truelist, marker)
+                self.truelist = self.right_operand.truelist
+                self.falselist = self.left_operand.falselist + self.right_operand.falselist
 
 
 class UnaryExpression(Expression):
@@ -87,36 +136,60 @@ class UnaryExpression(Expression):
 
     def visit(self, code_generator):
         self.operand.visit(code_generator)
-        self.place = code_generator.newtemp()
+        # find the type of result
         self.type = self.operand.type
         if self.unary_operator.type == "NOT":
+            # type checking
             if self.operand.type != DataType.BOOLEAN:
-                raise SemanticError("Incompatible types: expected boolean got numeric")
-            # TODO: backpatching
-        elif self.unary_operator.type == "PLUS":
-            code_generator.emit(UnaryAssignment(UnaryOperator.UNARY_PLUS, self.operand.place, self.place))
-        elif self.unary_operator.type == "MINUS":
-            code_generator.emit(UnaryAssignment(UnaryOperator.UNARY_MINUS, self.operand.place, self.place))
+                code_generator.log(SemanticError(f"Incompatible types: expected {DataType.BOOLEAN} got {self.operand.type}"))
+            # backpatching
+            self.truelist = self.operand.falselist
+            self.falselist = self.operand.truelist
+        else:
+            # allocate temporary
+            self.place = code_generator.newtemp(self.type)
+            expected = [DataType.REAL, DataType.INTEGER]
+            # type checking
+            if self.operand.type not in expected:
+                code_generator.log(SemanticError(f"Incompatible types: expected {expected} got {self.operand.type}"))
+            # code generation
+            code_generator.emit(UnaryAssignment(self.unary_operator.type, self.operand.place, self.place))
 
 
 class TerminalExpression(Expression):
     def __init__(self, terminal: Token):
         super().__init__("identifier_or_constant", leaf=terminal)
-        self.terminal = terminal
+        self.terminal: Token = terminal
 
     def visit(self, code_generator):
-        # TODO : lookup symbol table for type and place
-        self.place = self.terminal.lexeme
         if self.terminal.type == "ID":
-            self.type = DataType.INTEGER
+            entry = code_generator.lookup_entries(self.terminal)
+            if not entry:
+                code_generator.log(SemanticError(f"Identifier {self.terminal} is used before declaration."))
+            self.place = entry
+            self.type = entry.data_type
         elif self.terminal.type == "INTEGER_CONSTANT":
-            self.type = DataType.INTEGER
+            entry = code_generator.insert_entry(self.terminal, DataType.INTEGER, EntryType.CONSTANT)
+            self.place = entry
+            self.type = entry.data_type
         elif self.terminal.type == "REAL_CONSTANT":
-            self.type = DataType.REAL
+            entry = code_generator.insert_entry(self.terminal, DataType.REAL, EntryType.CONSTANT)
+            self.place = entry
+            self.type = entry.data_type
         elif self.terminal.type == "TRUE":
-            self.type = DataType.BOOLEAN
+            entry = code_generator.insert_entry(self.terminal, DataType.BOOLEAN, EntryType.CONSTANT)
+            #self.place = entry # note that this is not necessary because we don't have boolean data types at all
+            self.type = entry.data_type
+            # backpatching
+            self.truelist = [code_generator.nextquad]
+            code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
         elif self.terminal.type == "FALSE":
-            self.type = DataType.BOOLEAN
+            entry = code_generator.insert_entry(self.terminal, DataType.BOOLEAN, EntryType.CONSTANT)
+            #self.place = entry # note that this is not necessary
+            self.type = entry.data_type
+            # backpatching
+            self.falselist = [code_generator.nextquad]
+            code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
 
 
 class Statement(Node):
@@ -124,6 +197,7 @@ class Statement(Node):
         super().__init__(tag, children, leaf)
         self.nextlist = []
 
+    @abstractmethod
     def visit(self, code_generator):
         pass
 
@@ -135,7 +209,16 @@ class AssignmentStatement(Statement):
         self.lvalue = lvalue
 
     def visit(self, code_generator):
-        pass
+        self.rvalue.visit(code_generator)
+        entry = code_generator.lookup_entries(self.lvalue)
+        if not entry:
+            code_generator.log(SemanticError(f"Identifier {self.lvalue} is used before declaration."))
+        if entry.data_type != self.rvalue.type:
+            code_generator.log(SemanticError(f"Type mismatch, {entry.data_type} could not be mixed with {self.rvalue.type}."))
+        code_generator.emit(BareAssignment(self.rvalue.place, entry))
+        if self.rvalue.place.entry_type == EntryType.TEMPORARY:
+            code_generator.freetemp(self.rvalue.place.data_type)
+        self.nextlist = []
 
 
 class WhileStatement(Statement):
@@ -145,7 +228,17 @@ class WhileStatement(Statement):
         self.body = body
 
     def visit(self, code_generator):
-        pass
+        marker1 = code_generator.nextquad
+        self.condition.visit(code_generator)
+        if self.condition.type != DataType.BOOLEAN:
+            code_generator.log(
+                SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
+        marker2 = code_generator.nextquad
+        self.body.visit(code_generator)
+        code_generator.backpatch(self.body.nextlist, marker1)
+        code_generator.backpatch(self.condition.truelist, marker2)
+        self.nextlist = self.condition.falselist
+        code_generator.emit(UnconditionalJump(marker1))
 
 
 class IfStatement(Statement):
@@ -155,7 +248,14 @@ class IfStatement(Statement):
         self.body = body
 
     def visit(self, code_generator):
-        pass
+        self.condition.visit(code_generator)
+        if self.condition.type != DataType.BOOLEAN:
+            code_generator.log(
+                SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
+        marker = code_generator.nextquad
+        self.body.visit(code_generator)
+        code_generator.backpatch(self.condition.truelist, marker)
+        self.nextlist = self.condition.falselist + self.body.nextlist
 
 
 class IfElseStatement(Statement):
@@ -166,7 +266,32 @@ class IfElseStatement(Statement):
         self.else_body = else_body
 
     def visit(self, code_generator):
-        pass
+        self.condition.visit(code_generator)
+        if self.condition.type != DataType.BOOLEAN:
+            code_generator.log(
+                SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
+        marker1 = code_generator.nextquad
+        self.then_body.visit(code_generator)
+        marker2 = code_generator.nextquad
+        code_generator.emit(UnconditionalJump(None))
+        marker3 = code_generator.nextquad  # could be marker2 + 1?
+        self.else_body.visit(code_generator)
+        code_generator.backpatch(self.condition.truelist, marker1)
+        code_generator.backpatch(self.condition.falselist, marker3)
+        self.nextlist = self.then_body.nextlist + self.else_body.nextlist + [marker2]
+
+
+class CompoundStatement(Statement):
+    def __init__(self, first_statement: Statement):
+        super().__init__("compound_statement", children=[first_statement])
+
+    def visit(self, code_generator):
+        for statement in self.children[:-1]:
+            statement.visit(code_generator)
+            marker = code_generator.nextquad
+            code_generator.backpatch(statement.nextlist, marker)
+        self.children[-1].visit(code_generator)
+        self.nextlist = self.children[-1].nextlist
 
 
 class Arguments(Node):
@@ -189,14 +314,6 @@ class ProcedureCallStatement(Statement):
         pass
 
 
-class CompoundStatement(Statement):
-    def __init__(self, first_statement: Statement):
-        super().__init__("compound_statement", children=[first_statement])
-
-    def visit(self, code_generator):
-        pass
-
-
 class Declaration(Node):
     def __init__(self, first_identifier: Token):
         super().__init__("declaration")  # leaf = <data_type, [identifiers]>
@@ -209,8 +326,6 @@ class Declaration(Node):
             self.data_type = DataType.REAL
         elif token.type == "INTEGER":
             self.data_type = DataType.INTEGER
-        elif token.type == "BOOLEAN":
-            self.data_type = DataType.BOOLEAN
         self.leaf = (self.data_type, self.identifiers)
 
     def add_identifier(self, identifier: Token):

@@ -10,7 +10,11 @@ class CodeGeneratorBase(ABC):
         pass
 
     @abstractmethod
-    def newtemp(self):
+    def newtemp(self, data_type: DataType):
+        pass
+
+    @abstractmethod
+    def freetemp(self, data_type: DataType):
         pass
 
     @abstractmethod
@@ -29,7 +33,6 @@ class CodeGeneratorBase(ABC):
     def lookup_procedures(self, identifier: Token) -> SymbolTable:
         pass
 
-
     @property
     @abstractmethod
     def symbol_table(self) -> SymbolTable:
@@ -37,4 +40,17 @@ class CodeGeneratorBase(ABC):
 
     @abstractmethod
     def set_symbol_table(self, symbol_table: SymbolTable):
+        pass
+
+    @abstractmethod
+    def log(self, log):
+        pass
+
+    @property
+    @abstractmethod
+    def nextquad(self):
+        pass
+
+    @abstractmethod
+    def backpatch(self, quadruples, label):
         pass
