@@ -6,4 +6,4 @@ for test in os.listdir("tests/in"):
     print(test)
     input_file_path = f"tests/in/{test}"
     start_variable = test.split(".")[1]
-    compile_(input_file_path, "tests/out", semantic_analysis_relaxed=True, start=start_variable)
+    compile_(input_file_path, "tests/out", start=start_variable)

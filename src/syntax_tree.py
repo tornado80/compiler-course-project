@@ -321,7 +321,8 @@ class ProcedureCallStatement(Statement):
             if place.data_type != parameter.data_type:
                 code_generator.log(SemanticError("Type mismatch when passing arguments to procedure."))
             code_generator.emit(Parameter(place))
-            code_generator.freetemp(place.data_type)
+            if place.entry_type == EntryType.TEMPORARY:
+                code_generator.freetemp(place.data_type)
         code_generator.emit(Call(procedure, len(procedure.parameters)))
 
 
