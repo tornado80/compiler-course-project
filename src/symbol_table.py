@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 from src.lexer import Token
 
@@ -46,6 +46,7 @@ class SymbolTable:
         self.parent = parent
         self.entries = {}
         self.procedures = {}
+        self.parameters: List[Entry] = []
         self.next_available_temporary = {
             DataType.INTEGER: 0,
             DataType.REAL: 0

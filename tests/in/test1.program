@@ -6,7 +6,7 @@ s , c: real;
 
 
 
-procedure findMin(x, y, z: integer; m: integer; r, s: real);
+procedure findMin(x, y, z: integer; m: integer; s: real);
 var l: integer;
 begin
 //b:= 1* 2 < 5 + 7;
@@ -42,10 +42,11 @@ begin
 
     while b_var > 10 do
     begin
-       findMin(a_var,b_var,c_var, s);
+       findMin(a_var,b_var,c_var, 3 + 8, 4.0);
        b_var := b_var - 2
     end;
-
+    if (b_var > s) or false then
+        s := 4.0;
     s := s mod 5;
     if(s > 2) and (s <4 ) then
         a_var := -5;

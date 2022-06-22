@@ -21,13 +21,20 @@ class ThreeAddressCode(ABC):
         self.address3 = address3
 
 
-class Label(ThreeAddressCode):
+class StartLabel(ThreeAddressCode):
     def __init__(self, scope: SymbolTable):
         super().__init__(ThreeAddressOperator.LABEL, scope.header)
 
     def __str__(self):
-        return f"{self.address1}:"
+        return f"Start of {self.address1}:"
 
+
+class EndLabel(ThreeAddressCode):
+    def __init__(self, scope: SymbolTable):
+        super().__init__(ThreeAddressOperator.LABEL, scope.header)
+
+    def __str__(self):
+        return f"End of {self.address1}:"
 
 class BinaryAssignment(ThreeAddressCode):
     def __init__(self, binary_operator: BinaryOperator, arg1, arg2, result):
@@ -79,5 +86,8 @@ class Parameter(ThreeAddressCode):
 
 
 class Call(ThreeAddressCode):
-    def __init__(self, procedure, arity):
+    def __init__(self, procedure: SymbolTable, arity):
         super().__init__(ThreeAddressOperator.CALL, procedure, arity)
+
+    def __str__(self):
+        return f"call {self.address1.header.lexeme} {self.address2}"

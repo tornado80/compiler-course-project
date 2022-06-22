@@ -1,0 +1,13 @@
+procedure findMin(x, y, z: integer; m: integer; s: real);
+var l: integer;
+begin
+//b:= 1* 2 < 5 + 7;
+//a:=(1+2)*-4++5;
+   if x < y then
+      m:= x
+   else
+      m:= y;
+
+   if z < m then
+      m:= z
+end;

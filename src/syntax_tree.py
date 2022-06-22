@@ -5,8 +5,8 @@ from src.lexer import Token
 from src.operator_enum import UnaryOperator, BinaryOperator
 from src.ply.code_generator_base import CodeGeneratorBase
 from src.symbol_table import DataType, EntryType, Entry
-from src.three_address_code import UnaryAssignment, BinaryAssignment, Label, BareAssignment, ConditionalJump, \
-    UnconditionalJump
+from src.three_address_code import UnaryAssignment, BinaryAssignment, BareAssignment, ConditionalJump, \
+    UnconditionalJump, Parameter, Call, StartLabel, EndLabel
 
 
 class Node(ABC):
@@ -218,7 +218,6 @@ class AssignmentStatement(Statement):
         code_generator.emit(BareAssignment(self.rvalue.place, entry))
         if self.rvalue.place.entry_type == EntryType.TEMPORARY:
             code_generator.freetemp(self.rvalue.place.data_type)
-        self.nextlist = []
 
 
 class WhileStatement(Statement):
@@ -299,9 +298,12 @@ class Arguments(Node):
         super().__init__("arguments")
         if first_expression:
             self.add_children(first_expression)
+        self.queue = []
 
     def visit(self, code_generator):
-        pass
+        for expression in self.children:
+            expression.visit(code_generator)
+            self.queue.append(expression.place)
 
 
 class ProcedureCallStatement(Statement):
@@ -311,7 +313,16 @@ class ProcedureCallStatement(Statement):
         self.arguments = arguments
 
     def visit(self, code_generator):
-        pass
+        self.arguments.visit(code_generator)
+        procedure = code_generator.lookup_procedures(self.procedure_name)
+        if len(procedure.parameters) != len(self.arguments.queue):
+            code_generator.log(SemanticError("Procedure call arity does not match the procedure parameter counts."))
+        for place, parameter in zip(self.arguments.queue, procedure.parameters):
+            if place.data_type != parameter.data_type:
+                code_generator.log(SemanticError("Type mismatch when passing arguments to procedure."))
+            code_generator.emit(Parameter(place))
+            code_generator.freetemp(place.data_type)
+        code_generator.emit(Call(procedure, len(procedure.parameters)))
 
 
 class Declaration(Node):
@@ -358,7 +369,7 @@ class Parameters(Node):
         self.declarations.visit(code_generator)
         for entry in self.declarations.entrylist:
             entry.entry_type = EntryType.PARAMETER
-        del self.declarations.entrylist
+        self.entrylist = self.declarations.entrylist
 
 
 class Procedure(Node):
@@ -375,11 +386,14 @@ class Procedure(Node):
 
     def visit(self, code_generator):
         symbol_table = code_generator.insert_procedure(self.name)
-        code_generator.emit(Label(symbol_table))
+        code_generator.emit(StartLabel(symbol_table))
         code_generator.set_symbol_table(symbol_table)
         self.parameters.visit(code_generator)
+        symbol_table.parameters = self.parameters.entrylist
         self.declarations.visit(code_generator)
         self.compound_statement.visit(code_generator)
+        code_generator.backpatch(self.compound_statement.nextlist, code_generator.nextquad)
+        code_generator.emit(EndLabel(symbol_table))
         code_generator.set_symbol_table(symbol_table.parent)
 
 
@@ -409,5 +423,7 @@ class Program(Node):
     def visit(self, code_generator):
         self.declarations.visit(code_generator)
         self.procedures.visit(code_generator)
-        code_generator.emit(Label(code_generator.symbol_table))
+        code_generator.emit(StartLabel(code_generator.symbol_table))
         self.compound_statement.visit(code_generator)
+        code_generator.backpatch(self.compound_statement.nextlist, code_generator.nextquad)
+        code_generator.emit(EndLabel(code_generator.symbol_table))
