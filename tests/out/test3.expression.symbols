@@ -1,7 +1,0 @@
-SymbolTable(header: Token(type: ID, lexeme: 'DEFAULT', attribute: None, lineno: 0)):
-	entry: a -> Entry(token: Token(type: ID, lexeme: 'a', attribute: None, lineno: 1), offset: 0, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: b -> Entry(token: Token(type: ID, lexeme: 'b', attribute: None, lineno: 1), offset: 8, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: c -> Entry(token: Token(type: ID, lexeme: 'c', attribute: None, lineno: 1), offset: 16, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: d -> Entry(token: Token(type: ID, lexeme: 'd', attribute: None, lineno: 1), offset: 24, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: e -> Entry(token: Token(type: ID, lexeme: 'e', attribute: None, lineno: 1), offset: 32, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: f -> Entry(token: Token(type: ID, lexeme: 'f', attribute: None, lineno: 1), offset: 40, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)

@@ -14,12 +14,14 @@ class CodeGenerator(CodeGeneratorBase):
         else:
             self._symbol_table = SymbolTable(Token("ID", "DEFAULT", None, 0))
         self.quadruples: List[ThreeAddressCode] = []
+        self.labeled_quadruples = set()
         self.logs = []
 
     def backpatch(self, quadruples, label):
         for quadruple in quadruples:
-            self.quadruples[quadruple - 1].address3 = label  # change goto
+            self.quadruples[quadruple - 1].address3 = f"l{label}"  # fill goto
             # 'quadruple - 1' is for transforming to zero based
+        self.labeled_quadruples.add(label - 1)
 
     @property
     def nextquad(self):
@@ -42,12 +44,12 @@ class CodeGenerator(CodeGeneratorBase):
         if current > maximum:
             self._symbol_table.max_count_of_temporary[data_type] = current
             entry = self.insert_entry(
-                Token("ID", f"({current}/{data_type.name})", None, 0),
+                Token("ID", f"t_{data_type.name}_{current}", None, 0),
                 data_type,
                 EntryType.TEMPORARY
             )
         else:
-            entry = self.lookup_entries(Token("ID", f"({current}/{data_type.name})", None, 0))
+            entry = self.lookup_entries(Token("ID", f"t_{data_type.name}_{current}", None, 0))
         return entry
 
     def freetemp(self, data_type: DataType):

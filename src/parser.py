@@ -238,7 +238,6 @@ class PascalParser:
 
     def p_empty(self, p):
         """empty :"""
-        p[0] = Node("empty")
 
     def p_error(self, p):
         error = f"Syntax error at line {p.lineno} for token {p.tag} with value {p.value}"

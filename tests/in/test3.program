@@ -1,0 +1,21 @@
+program test
+//var a : integer;
+procedure calc (n,m : integer);
+var
+	i, j, s : integer;
+begin
+i := 0;
+	s := 0;
+	while i <= n do
+	begin
+	j := 0;
+	    i := i + 1;
+	    while j <= m do begin
+	        j := j + 1;
+	        s := s + 1
+	    end
+	end
+end;
+begin
+	calc(3,2)
+end

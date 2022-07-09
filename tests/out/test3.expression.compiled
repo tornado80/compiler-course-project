@@ -1,6 +1,0 @@
-if a LESS_THAN b goto None
-goto 3
-if c LESS_THAN d goto 5
-goto None
-if e LESS_THAN f goto None
-goto None

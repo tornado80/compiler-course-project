@@ -26,7 +26,7 @@ class StartLabel(ThreeAddressCode):
         super().__init__(ThreeAddressOperator.LABEL, scope.header)
 
     def __str__(self):
-        return f"Start of {self.address1}:"
+        return f"Start of {self.address1.lexeme}"
 
 
 class EndLabel(ThreeAddressCode):
@@ -34,14 +34,15 @@ class EndLabel(ThreeAddressCode):
         super().__init__(ThreeAddressOperator.LABEL, scope.header)
 
     def __str__(self):
-        return f"End of {self.address1}:"
+        return f"End of {self.address1.lexeme}"
+
 
 class BinaryAssignment(ThreeAddressCode):
     def __init__(self, binary_operator: BinaryOperator, arg1, arg2, result):
         super().__init__(binary_operator, arg1, arg2, result)
 
     def __str__(self):
-        return f"{self.address3} := {self.address1} {self.operator} {self.address2}"
+        return f"{self.address3} = {self.address1} {self.operator} {self.address2}"
 
 
 class UnaryAssignment(ThreeAddressCode):
@@ -49,7 +50,7 @@ class UnaryAssignment(ThreeAddressCode):
         super().__init__(unary_operator, arg, None, result)
 
     def __str__(self):
-        return f"{self.address3} := {self.operator} {self.address1}"
+        return f"{self.address3} = {self.operator} {self.address1}"
 
 
 class BareAssignment(ThreeAddressCode):
@@ -57,7 +58,7 @@ class BareAssignment(ThreeAddressCode):
         super().__init__(ThreeAddressOperator.ASSIGN, src, None, dest)
 
     def __str__(self):
-        return f"{self.address3} := {self.address1}"
+        return f"{self.address3} = {self.address1}"
 
 
 class ConditionalJump(ThreeAddressCode):
@@ -66,7 +67,7 @@ class ConditionalJump(ThreeAddressCode):
         super().__init__(ThreeAddressOperator.CONDITIONAL_JUMP, arg1, arg2, label)
 
     def __str__(self):
-        return f"if {self.address1} {self.relational_operator} {self.address2} goto {self.address3}"
+        return f"if ({self.address1} {self.relational_operator} {self.address2}) goto {self.address3}"
 
 
 class UnconditionalJump(ThreeAddressCode):

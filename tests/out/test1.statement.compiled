@@ -1,5 +1,0 @@
-a := 2.0
-goto 3
-(1/REAL) := a PLUS 2.0
-a := (1/REAL)
-goto 2

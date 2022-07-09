@@ -1,5 +1,0 @@
-SymbolTable(header: Token(type: ID, lexeme: 'DEFAULT', attribute: None, lineno: 0)):
-	entry: 2.0 -> Entry(token: Token(type: REAL_CONSTANT, lexeme: '2.0', attribute: 2.0, lineno: 2), offset: 0, width: 8, data_type: DataType.REAL, entry_type: EntryType.CONSTANT)
-	entry: a -> Entry(token: Token(type: ID, lexeme: 'a', attribute: None, lineno: 2), offset: 8, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: true -> Entry(token: Token(type: TRUE, lexeme: 'true', attribute: True, lineno: 3), offset: 16, width: 1, data_type: DataType.BOOLEAN, entry_type: EntryType.CONSTANT)
-	entry: (1/REAL) -> Entry(token: Token(type: ID, lexeme: '(1/REAL)', attribute: None, lineno: 0), offset: 17, width: 8, data_type: DataType.REAL, entry_type: EntryType.TEMPORARY)

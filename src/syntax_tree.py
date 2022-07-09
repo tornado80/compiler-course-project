@@ -78,7 +78,7 @@ class BinaryExpression(Expression):
             # TODO: convert to Relational Operator Enum. we have just relaxed restricting types :)
             # code generation
             code_generator.emit(ConditionalJump(
-                self.binary_operator.type,
+                self.binary_operator.lexeme,
                 self.left_operand.place,
                 self.right_operand.place,
                 None  # None label is to be backpatched
@@ -104,7 +104,7 @@ class BinaryExpression(Expression):
                 self.place = code_generator.newtemp(self.type)
             # code generation
             code_generator.emit(BinaryAssignment(
-                self.binary_operator.type,
+                self.binary_operator.lexeme,
                 self.left_operand.place,
                 self.right_operand.place,
                 self.place
@@ -153,7 +153,7 @@ class UnaryExpression(Expression):
             if self.operand.type not in expected:
                 code_generator.log(SemanticError(f"Incompatible types: expected {expected} got {self.operand.type}"))
             # code generation
-            code_generator.emit(UnaryAssignment(self.unary_operator.type, self.operand.place, self.place))
+            code_generator.emit(UnaryAssignment(self.unary_operator.lexeme, self.operand.place, self.place))
 
 
 class TerminalExpression(Expression):
@@ -237,7 +237,7 @@ class WhileStatement(Statement):
         code_generator.backpatch(self.body.nextlist, marker1)
         code_generator.backpatch(self.condition.truelist, marker2)
         self.nextlist = self.condition.falselist
-        code_generator.emit(UnconditionalJump(marker1))
+        code_generator.emit(UnconditionalJump(f"l{marker1}"))
 
 
 class IfStatement(Statement):

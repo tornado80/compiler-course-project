@@ -1,8 +1,0 @@
-SymbolTable(header: Token(type: ID, lexeme: 'DEFAULT', attribute: None, lineno: 0)):
-	entry: 4 -> Entry(token: Token(type: INTEGER_CONSTANT, lexeme: '4', attribute: 4, lineno: 1), offset: 0, width: 4, data_type: DataType.INTEGER, entry_type: EntryType.CONSTANT)
-	entry: 3 -> Entry(token: Token(type: INTEGER_CONSTANT, lexeme: '3', attribute: 3, lineno: 1), offset: 4, width: 4, data_type: DataType.INTEGER, entry_type: EntryType.CONSTANT)
-	entry: (1/INTEGER) -> Entry(token: Token(type: ID, lexeme: '(1/INTEGER)', attribute: None, lineno: 0), offset: 8, width: 4, data_type: DataType.INTEGER, entry_type: EntryType.TEMPORARY)
-	entry: a_var -> Entry(token: Token(type: ID, lexeme: 'a_var', attribute: None, lineno: 1), offset: 12, width: 8, data_type: DataType.REAL, entry_type: EntryType.DECLARATION)
-	entry: (1/REAL) -> Entry(token: Token(type: ID, lexeme: '(1/REAL)', attribute: None, lineno: 0), offset: 20, width: 8, data_type: DataType.REAL, entry_type: EntryType.TEMPORARY)
-	entry: 7 -> Entry(token: Token(type: INTEGER_CONSTANT, lexeme: '7', attribute: 7, lineno: 1), offset: 28, width: 4, data_type: DataType.INTEGER, entry_type: EntryType.CONSTANT)
-	entry: 2 -> Entry(token: Token(type: INTEGER_CONSTANT, lexeme: '2', attribute: 2, lineno: 1), offset: 32, width: 4, data_type: DataType.INTEGER, entry_type: EntryType.CONSTANT)
