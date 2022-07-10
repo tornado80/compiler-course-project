@@ -423,10 +423,11 @@ class Procedure(Node):
         # insert procedure activation record struct at the beginning of program
         code_generator.insert_quadruple(1, ActivationRecordDefinition(symbol_table))
         # mark the end of code for the procedure
-        end_marker = Label(code_generator.newlabel())
-        code_generator.emit(end_marker)
+        if len(self.compound_statement.nextlist) > 0:
+            end_marker = Label(code_generator.newlabel())
+            code_generator.emit(end_marker)
+            code_generator.backpatch(self.compound_statement.nextlist, end_marker)  # code_generator.nextquad
         code_generator.emit(Return(symbol_table))
-        code_generator.backpatch(self.compound_statement.nextlist, end_marker)  # code_generator.nextquad
         # restore enclosing scope symbol table
         code_generator.set_symbol_table(symbol_table.parent)
 
@@ -468,6 +469,7 @@ class Program(Node):
         for data_type, count in code_generator.symbol_table.max_count_of_temporary.items():
             if count > 0:
                 code_generator.insert_quadruple(quad - 1, Temporary(data_type, count))
-        end_marker = code_generator.emit(Label(code_generator.newlabel()))
-        code_generator.backpatch(self.compound_statement.nextlist, end_marker)
+        if len(self.compound_statement.nextlist) > 0:
+            end_marker = code_generator.emit(Label(code_generator.newlabel()))
+            code_generator.backpatch(self.compound_statement.nextlist, end_marker)
         code_generator.emit(EndProgram())

@@ -47,5 +47,5 @@ def compile_(
         quadruples = code_generator.generate(semantic_analysis_relaxed)
         with open(f"{output_file_path}.symbols", "w") as f:
             f.write(str(code_generator.symbol_table))
-        with open(f"{output_file_path}.compiled", "w") as f:
+        with open(f"{output_file_path}.compiled.c", "w") as f:
             f.writelines(f"{quadruple}\n" for quadruple in quadruples)
