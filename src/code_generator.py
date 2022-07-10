@@ -3,7 +3,7 @@ from src.lexer import Token
 from src.ply.code_generator_base import CodeGeneratorBase
 from src.symbol_table import SymbolTable, DataType, EntryType, Entry
 from src.syntax_tree import Node, Program
-from src.three_address_code import ThreeAddressCode
+from src.three_address_code import ThreeAddressCode, Label
 
 
 class CodeGenerator(CodeGeneratorBase):
@@ -14,14 +14,20 @@ class CodeGenerator(CodeGeneratorBase):
         else:
             self._symbol_table = SymbolTable(Token("ID", "DEFAULT", None, 0))
         self.quadruples: List[ThreeAddressCode] = []
-        self.labeled_quadruples = set()
+        self.next_available_label = 0
         self.logs = []
 
-    def backpatch(self, quadruples, label):
+    def newlabel(self):
+        self.next_available_label += 1
+        return self.next_available_label
+
+    def backpatch(self, quadruples: List[ThreeAddressCode], label: Label):
         for quadruple in quadruples:
-            self.quadruples[quadruple - 1].address3 = f"l{label}"  # fill goto
+            quadruple.address3 = label  # fill goto for conditional and unconditional jumps
             # 'quadruple - 1' is for transforming to zero based
-        self.labeled_quadruples.add(label - 1)
+
+    def insert_quadruple(self, index: int, tac: ThreeAddressCode):
+        self.quadruples.insert(index, tac)
 
     @property
     def nextquad(self):
@@ -33,8 +39,9 @@ class CodeGenerator(CodeGeneratorBase):
         if isinstance(log, Exception):
             raise log
 
-    def emit(self, tac: ThreeAddressCode):
+    def emit(self, tac: ThreeAddressCode) -> ThreeAddressCode:
         self.quadruples.append(tac)
+        return tac
 
     def newtemp(self, data_type: DataType) -> Entry:
         # Could we implement this method in symbol table?
@@ -44,12 +51,12 @@ class CodeGenerator(CodeGeneratorBase):
         if current > maximum:
             self._symbol_table.max_count_of_temporary[data_type] = current
             entry = self.insert_entry(
-                Token("ID", f"t_{data_type.name}_{current}", None, 0),
+                Token("ID", f"temporary_{data_type.name}_{current}", current, 0),
                 data_type,
                 EntryType.TEMPORARY
             )
         else:
-            entry = self.lookup_entries(Token("ID", f"t_{data_type.name}_{current}", None, 0))
+            entry = self.lookup_entries(Token("ID", f"temporary_{data_type.name}_{current}", current, 0))
         return entry
 
     def freetemp(self, data_type: DataType):

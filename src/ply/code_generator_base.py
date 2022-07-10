@@ -6,7 +6,15 @@ from src.three_address_code import ThreeAddressCode
 
 class CodeGeneratorBase(ABC):
     @abstractmethod
-    def emit(self, tac: ThreeAddressCode):
+    def emit(self, tac: ThreeAddressCode) -> ThreeAddressCode:
+        pass
+
+    @abstractmethod
+    def newlabel(self):
+        pass
+
+    @abstractmethod
+    def insert_quadruple(self, index: int, tac: ThreeAddressCode):
         pass
 
     @abstractmethod

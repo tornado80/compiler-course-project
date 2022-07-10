@@ -48,8 +48,4 @@ def compile_(
         with open(f"{output_file_path}.symbols", "w") as f:
             f.write(str(code_generator.symbol_table))
         with open(f"{output_file_path}.compiled", "w") as f:
-            for i, quadruple in enumerate(quadruples):
-                if i in code_generator.labeled_quadruples:
-                    f.write(f"l{i + 1}: {quadruple};\n")
-                else:
-                    f.write(f"{quadruple};\n")
+            f.writelines(f"{quadruple}\n" for quadruple in quadruples)

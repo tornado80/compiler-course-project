@@ -23,7 +23,7 @@ class PascalLexer:
         "IF", "THEN", "ELSE", "WHILE", "DO",
         "AND", "OR", "NOT", "MOD", "DIV",
         "INTEGER", "REAL", "PROCEDURE",
-        "TRUE", "FALSE"
+        "TRUE", "FALSE", "PRINT"
     ]
     reserved = {keyword.lower(): keyword for keyword in keywords}
     tokens = [

@@ -6,17 +6,18 @@ from src.operator_enum import UnaryOperator, BinaryOperator
 from src.ply.code_generator_base import CodeGeneratorBase
 from src.symbol_table import DataType, EntryType, Entry
 from src.three_address_code import UnaryAssignment, BinaryAssignment, BareAssignment, ConditionalJump, \
-    UnconditionalJump, Parameter, Call, StartLabel, EndLabel
+    UnconditionalJump, Call, BeginProgram, EndProgram, Label, ThreeAddressCode, Definition, Temporary, \
+    ActivationRecordDefinition, Return, Print
 
 
 class Node(ABC):
-    def __init__(self, tag=None, children: list = None, leaf=None, parent=None):
+    def __init__(self, tag=None, children: List['Node'] = None, leaf=None, parent: 'Node'=None):
         self.tag = tag
-        self.children = []
+        self.children: List['Node'] = []
         if children:
             self.add_children(*children)
         self.leaf = leaf
-        self.parent = parent
+        self.parent: 'Node' = parent
 
     @property
     def id(self):
@@ -41,8 +42,8 @@ class Expression(Node):
         super().__init__(tag, children, leaf)
         self.place: Entry = None
         self.type: DataType = None
-        self.truelist = []
-        self.falselist = []
+        self.truelist: List[ThreeAddressCode] = []
+        self.falselist: List[ThreeAddressCode] = []
 
 
 class BinaryExpression(Expression):
@@ -52,9 +53,12 @@ class BinaryExpression(Expression):
         self.left_operand = left_operand
         self.right_operand = right_operand
 
-    def visit(self, code_generator):
+    def visit(self, code_generator: CodeGeneratorBase):
         self.left_operand.visit(code_generator)
-        marker = code_generator.nextquad
+        if self.binary_operator.type in ["AND", "OR"]:
+            # marker = code_generator.nextquad
+            marker = Label(code_generator.newlabel())
+            code_generator.emit(marker)
         self.right_operand.visit(code_generator)
         arithmetic_types = [DataType.REAL, DataType.INTEGER]
         if self.binary_operator.type in ["LESS_THAN", "GREATER_THAN", "NOT_EQUAL",
@@ -71,25 +75,26 @@ class BinaryExpression(Expression):
                 code_generator.freetemp(self.right_operand.place.data_type)
             # find the type of result
             self.type = DataType.BOOLEAN
-            # backpatching
-            nextquad = code_generator.nextquad
-            self.truelist = [nextquad]
-            self.falselist = [nextquad + 1]
             # TODO: convert to Relational Operator Enum. we have just relaxed restricting types :)
             # code generation
-            code_generator.emit(ConditionalJump(
+            conditional_jump = code_generator.emit(ConditionalJump(
                 self.binary_operator.lexeme,
                 self.left_operand.place,
                 self.right_operand.place,
                 None  # None label is to be backpatched
             ))
-            code_generator.emit(UnconditionalJump(None))
+            unconditional_jump = code_generator.emit(UnconditionalJump(None))
+            # backpatching
+            # nextquad = code_generator.nextquad
+            self.truelist = [conditional_jump]  # [nextquad]
+            self.falselist = [unconditional_jump]  # [nextquad + 1]
         if self.binary_operator.type in ["PLUS", "MINUS", "TIMES", "DIVIDE", "MOD", "DIV"]:
             # type checking
             if self.left_operand.type not in arithmetic_types or self.right_operand.type not in arithmetic_types:
                 code_generator.log(
                     SemanticError(f"Incompatible types: arithmetic operators only apply to arithmetic types.")
                 )
+            # TODO: type checking right and left of MOD and DIV
             # free temporary
             if self.left_operand.place.entry_type == EntryType.TEMPORARY:
                 code_generator.freetemp(self.left_operand.place.data_type)
@@ -181,25 +186,37 @@ class TerminalExpression(Expression):
             #self.place = entry # note that this is not necessary because we don't have boolean data types at all
             self.type = entry.data_type
             # backpatching
-            self.truelist = [code_generator.nextquad]
-            code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
+            unconditional_jump = code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
+            self.truelist = [unconditional_jump]
         elif self.terminal.type == "FALSE":
             entry = code_generator.insert_entry(self.terminal, DataType.BOOLEAN, EntryType.CONSTANT)
             #self.place = entry # note that this is not necessary
             self.type = entry.data_type
             # backpatching
-            self.falselist = [code_generator.nextquad]
-            code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
+            unconditional_jump = code_generator.emit(UnconditionalJump(None))  # None label is to be backpatched
+            self.falselist = [unconditional_jump]
 
 
 class Statement(Node):
     def __init__(self, tag, children=None, leaf=None):
         super().__init__(tag, children, leaf)
-        self.nextlist = []
+        self.nextlist: List[ThreeAddressCode] = []
 
     @abstractmethod
     def visit(self, code_generator):
         pass
+
+
+class PrintStatement(Statement):
+    def __init__(self, expression: Expression):
+        super().__init__("print", leaf=expression)
+        self.expression = expression
+
+    def visit(self, code_generator):
+        self.expression.visit(code_generator)
+        code_generator.emit(Print(self.expression.place))
+        if self.expression.place.entry_type == EntryType.TEMPORARY:
+            code_generator.freetemp(self.expression.place.data_type)
 
 
 class AssignmentStatement(Statement):
@@ -227,17 +244,17 @@ class WhileStatement(Statement):
         self.body = body
 
     def visit(self, code_generator):
-        marker1 = code_generator.nextquad
+        marker1 = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad
         self.condition.visit(code_generator)
         if self.condition.type != DataType.BOOLEAN:
             code_generator.log(
                 SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
-        marker2 = code_generator.nextquad
+        marker2 = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad
         self.body.visit(code_generator)
         code_generator.backpatch(self.body.nextlist, marker1)
         code_generator.backpatch(self.condition.truelist, marker2)
         self.nextlist = self.condition.falselist
-        code_generator.emit(UnconditionalJump(f"l{marker1}"))
+        code_generator.emit(UnconditionalJump(marker1))  # f"l{marker1}"
 
 
 class IfStatement(Statement):
@@ -251,7 +268,7 @@ class IfStatement(Statement):
         if self.condition.type != DataType.BOOLEAN:
             code_generator.log(
                 SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
-        marker = code_generator.nextquad
+        marker = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad
         self.body.visit(code_generator)
         code_generator.backpatch(self.condition.truelist, marker)
         self.nextlist = self.condition.falselist + self.body.nextlist
@@ -269,15 +286,15 @@ class IfElseStatement(Statement):
         if self.condition.type != DataType.BOOLEAN:
             code_generator.log(
                 SemanticError(f"Type mismatch, conditional expressions have to be boolean."))
-        marker1 = code_generator.nextquad
+        marker1 = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad
         self.then_body.visit(code_generator)
-        marker2 = code_generator.nextquad
-        code_generator.emit(UnconditionalJump(None))
-        marker3 = code_generator.nextquad  # could be marker2 + 1?
+        # marker2 = code_generator.nextquad
+        unconditional_jump = code_generator.emit(UnconditionalJump(None))
+        marker3 = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad  # could be marker2 + 1?
         self.else_body.visit(code_generator)
         code_generator.backpatch(self.condition.truelist, marker1)
         code_generator.backpatch(self.condition.falselist, marker3)
-        self.nextlist = self.then_body.nextlist + self.else_body.nextlist + [marker2]
+        self.nextlist = self.then_body.nextlist + self.else_body.nextlist + [unconditional_jump]
 
 
 class CompoundStatement(Statement):
@@ -287,8 +304,9 @@ class CompoundStatement(Statement):
     def visit(self, code_generator):
         for statement in self.children[:-1]:
             statement.visit(code_generator)
-            marker = code_generator.nextquad
-            code_generator.backpatch(statement.nextlist, marker)
+            if len(statement.nextlist) > 0:
+                marker = code_generator.emit(Label(code_generator.newlabel()))  # code_generator.nextquad
+                code_generator.backpatch(statement.nextlist, marker)
         self.children[-1].visit(code_generator)
         self.nextlist = self.children[-1].nextlist
 
@@ -317,13 +335,16 @@ class ProcedureCallStatement(Statement):
         procedure = code_generator.lookup_procedures(self.procedure_name)
         if len(procedure.parameters) != len(self.arguments.queue):
             code_generator.log(SemanticError("Procedure call arity does not match the procedure parameter counts."))
+        marker = Label(code_generator.newlabel())
+        code_generator.emit(Call(procedure, marker))
         for place, parameter in zip(self.arguments.queue, procedure.parameters):
             if place.data_type != parameter.data_type:
                 code_generator.log(SemanticError("Type mismatch when passing arguments to procedure."))
-            code_generator.emit(Parameter(place))
+            code_generator.emit(BareAssignment(place, parameter))
             if place.entry_type == EntryType.TEMPORARY:
                 code_generator.freetemp(place.data_type)
-        code_generator.emit(Call(procedure, len(procedure.parameters)))
+        code_generator.emit(UnconditionalJump(procedure.begin_code_label))
+        code_generator.emit(marker)
 
 
 class Declaration(Node):
@@ -386,15 +407,27 @@ class Procedure(Node):
         self.compound_statement = compound_statement
 
     def visit(self, code_generator):
+        # create a symbol table for the procedure
         symbol_table = code_generator.insert_procedure(self.name)
-        code_generator.emit(StartLabel(symbol_table))
+        # mark the beginning of code for the procedure
+        begin_marker = Label(code_generator.newlabel())
+        code_generator.emit(begin_marker)
+        symbol_table.set_begin_code_label(begin_marker)
+        # set current symbol table in code generator to the newly generated one
         code_generator.set_symbol_table(symbol_table)
+        # visit parameters
         self.parameters.visit(code_generator)
         symbol_table.parameters = self.parameters.entrylist
         self.declarations.visit(code_generator)
         self.compound_statement.visit(code_generator)
-        code_generator.backpatch(self.compound_statement.nextlist, code_generator.nextquad)
-        code_generator.emit(EndLabel(symbol_table))
+        # insert procedure activation record struct at the beginning of program
+        code_generator.insert_quadruple(1, ActivationRecordDefinition(symbol_table))
+        # mark the end of code for the procedure
+        end_marker = Label(code_generator.newlabel())
+        code_generator.emit(end_marker)
+        code_generator.emit(Return(symbol_table))
+        code_generator.backpatch(self.compound_statement.nextlist, end_marker)  # code_generator.nextquad
+        # restore enclosing scope symbol table
         code_generator.set_symbol_table(symbol_table.parent)
 
 
@@ -412,7 +445,7 @@ class Procedures(Node):
 class Program(Node):
     def __init__(self,
                  name: Token,
-                 declarations: Declaration,
+                 declarations: Declarations,
                  procedures: Procedures,
                  compound_statement: CompoundStatement):
         super().__init__("program", children=[declarations, procedures, compound_statement], leaf=name)
@@ -422,9 +455,19 @@ class Program(Node):
         self.name = name
 
     def visit(self, code_generator):
+        code_generator.emit(BeginProgram())
         self.declarations.visit(code_generator)
+        for entry in self.declarations.entrylist:
+            code_generator.emit(Definition(entry))
+        unconditional_jump = code_generator.emit(UnconditionalJump(None))
         self.procedures.visit(code_generator)
-        code_generator.emit(StartLabel(code_generator.symbol_table))
+        begin_marker = code_generator.emit(Label(code_generator.newlabel()))
+        code_generator.backpatch([unconditional_jump], begin_marker)
+        quad = code_generator.nextquad
         self.compound_statement.visit(code_generator)
-        code_generator.backpatch(self.compound_statement.nextlist, code_generator.nextquad)
-        code_generator.emit(EndLabel(code_generator.symbol_table))
+        for data_type, count in code_generator.symbol_table.max_count_of_temporary.items():
+            if count > 0:
+                code_generator.insert_quadruple(quad - 1, Temporary(data_type, count))
+        end_marker = code_generator.emit(Label(code_generator.newlabel()))
+        code_generator.backpatch(self.compound_statement.nextlist, end_marker)
+        code_generator.emit(EndProgram())

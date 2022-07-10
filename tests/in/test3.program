@@ -14,8 +14,11 @@ i := 0;
 	        j := j + 1;
 	        s := s + 1
 	    end
-	end
+	end;
+	print(s)
 end;
 begin
-	calc(3,2)
+	calc(3,2);
+	print(3 + 7);
+	print(4 mod 3)
 end

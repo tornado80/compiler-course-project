@@ -2,7 +2,7 @@ import src.ply.yacc
 from src.lexer import PascalLexer, Token
 from src.syntax_tree import Node, BinaryExpression, UnaryExpression, TerminalExpression, Program, Declarations, \
     Declaration, Procedures, Procedure, Parameters, CompoundStatement, AssignmentStatement, WhileStatement, \
-    ProcedureCallStatement, IfStatement, IfElseStatement, Arguments
+    ProcedureCallStatement, IfStatement, IfElseStatement, Arguments, PrintStatement
 
 
 class PascalParser:
@@ -120,6 +120,11 @@ class PascalParser:
         else:
             p[0] = CompoundStatement(p[1])
             self.log("statement_list : statement")
+
+    def p_statement_print(self, p):
+        """statement : PRINT LEFT_PARENTHESIS expression RIGHT_PARENTHESIS"""
+        p[0] = PrintStatement(p[3])
+        self.log(self.p_statement_print.__doc__)
 
     def p_statement_assignment(self, p):
         """statement : ID ASSIGN expression"""
@@ -240,7 +245,7 @@ class PascalParser:
         """empty :"""
 
     def p_error(self, p):
-        error = f"Syntax error at line {p.lineno} for token {p.tag} with value {p.value}"
+        error = f"Syntax error at token {p}"
         self.log(error)
         raise SyntaxError(error)
 

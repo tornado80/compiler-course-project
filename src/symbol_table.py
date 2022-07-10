@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Dict
 
 from src.lexer import Token
 
@@ -24,7 +24,7 @@ class Entry:
                  offset: int,
                  data_type: DataType,
                  entry_type: EntryType,
-                 symbol_table):
+                 symbol_table: 'SymbolTable'):
         self.token: Token = token
         self.offset: int = offset
         self.width: int = data_type.value[1]
@@ -33,7 +33,21 @@ class Entry:
         self.symbol_table = symbol_table
 
     def __str__(self):
-        return self.token.lexeme
+        if self.entry_type == EntryType.CONSTANT:
+            return str(self.token.attribute)
+        if self.symbol_table.parent is None:  # entry in program
+            if self.entry_type == EntryType.TEMPORARY:
+                return f"temporary_{self.data_type.name}[{self.token.attribute - 1}]"
+            elif self.entry_type == EntryType.DECLARATION:  # declaration
+                return self.token.lexeme
+        else:  # entry in procedure should use current activation record
+            common = f"((ActivationRecordPtr_{self.symbol_table.header.lexeme})current_activation_record)->"
+            if self.entry_type == EntryType.TEMPORARY:
+                return f"{common}temporary_{self.data_type.name}[{self.token.attribute - 1}]"
+            elif self.entry_type == EntryType.DECLARATION:
+                return f"({common}locals).{self.token.lexeme}"
+            elif self.entry_type == EntryType.PARAMETER:
+                return f"({common}parameters).{self.token.lexeme}"
 
     def to_string(self):
         return f"Entry(token: {self.token}, offset: {self.offset}, width: {self.width}, " \
@@ -41,12 +55,13 @@ class Entry:
 
 
 class SymbolTable:
-    def __init__(self, header: Token, parent=None):
+    def __init__(self, header: Token, parent: 'SymbolTable' = None):
         self.header = header
         self.parent = parent
-        self.entries = {}
-        self.procedures = {}
-        self.parameters: List[Entry] = []
+        self.begin_code_label = None
+        self.entries: Dict[str, Entry] = {}
+        self.procedures: Dict[str, SymbolTable] = {}
+        self.parameters: List[Entry] = None
         self.next_available_temporary = {
             DataType.INTEGER: 0,
             DataType.REAL: 0
@@ -65,6 +80,9 @@ class SymbolTable:
             lines.append(f"\tprocedure: {lexeme} -> ")
             lines.extend(f"\t\t{line}" for line in str(procedure).splitlines())
         return "\n".join(lines)
+
+    def set_begin_code_label(self, label):
+        self.begin_code_label = label
 
     def insert_entry(self, identifier: Token, data_type: DataType, entry_type: EntryType):
         lexeme = identifier.lexeme
@@ -95,7 +113,7 @@ class SymbolTable:
         current = self
         while current is not None:
             if lexeme in current.entries:
-                return self.entries[lexeme]
+                return current.entries[lexeme]
             current = current.parent
         return None
 
@@ -104,6 +122,6 @@ class SymbolTable:
         current = self
         while current is not None:
             if lexeme in current.procedures:
-                return self.procedures[lexeme]
+                return current.procedures[lexeme]
             current = current.parent
         return None
