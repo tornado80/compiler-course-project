@@ -162,7 +162,8 @@ class Call(ThreeAddressCode):
             f"tmp_activation_record = malloc(sizeof(ActivationRecord_{self.address1.header.lexeme}));",
             self.prepare_temporaries(),
             f"{self.common}->control_link = current_activation_record;",
-            f"{self.common}->return_address = &&{self.address2.name};"
+            f"{self.common}->return_address = &&{self.address2.name};",
+            f"current_activation_record = tmp_activation_record;"
         ])
 
 
